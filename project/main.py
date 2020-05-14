@@ -11,7 +11,7 @@ from sqlalchemy import create_engine
 def read_file():
     res=[]
     current_path = os.path.dirname(__file__)
-    names=pd.read_csv(current_path+'\\names.csv')
+    names=pd.read_csv(current_path+'names.csv')
     for x in names['name']:
         res.append(x)
     return res
@@ -141,7 +141,7 @@ def main():
     }
     for i,name in enumerate(names):
         idx=i+1
-        print(name)
+        # print(name)
         urls=get_url(name)
         for x in urls:
             xxxx+=1
@@ -156,10 +156,10 @@ def main():
             data['newsmaintext'].append(xx['content'])
             data['newsTime'].append(xx['time'])
             titles.append(xx['title'])
-            if xxxx>=15:
-                break
-        if xxxx>=15:
-            break
+        #     if xxxx>=15:
+        #         break
+        # if xxxx>=15:
+        #     break
     data['positive/negative']=list(map(check,Analyse(titles)))
     df=pd.DataFrame(data)
     # print(df)
