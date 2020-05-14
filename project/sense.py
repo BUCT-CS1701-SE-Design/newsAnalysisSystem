@@ -10,10 +10,10 @@ import pandas as pd
 def Analyse(arr):
     ans = []
     for i in range(len(arr)):
-        text = arr[i][0]
-        print(text)
+        text = arr[i]
+        # print(text)
         s = SnowNLP(text)
-        print(s.sentiments)
+        # print(s.sentiments)
         if s.sentiments <= 0.001 or s.sentiments > 1:
             ans.append(0)
         else:

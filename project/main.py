@@ -6,6 +6,7 @@ import pandas as pd
 import numpy as np
 import os
 from sense import Analyse
+from sqlalchemy import create_engine
 
 def read_file():
     res=[]
@@ -155,17 +156,18 @@ def main():
             data['newsmaintext'].append(xx['content'])
             data['newsTime'].append(xx['time'])
             titles.append(xx['title'])
-        #     if xxxx>=30:
+        #     if xxxx>=15:
         #         break
-        # if xxxx>=30:
+        # if xxxx>=15:
         #     break
     data['positive/negative']=list(map(check,Analyse(titles)))
     df=pd.DataFrame(data)
     # print(df)
+    engine = create_engine('mysql+pymysql://test2:test2@rm-bp1k0s6kbpm66bpfc4o.mysql.rds.aliyuncs.com/museumapplication')
+    df.to_sql(name='museumnews',con=engine,chunksize=1000,if_exists='append',index=None)
     # print(tt)
-    current_path = os.path.dirname(__file__)
-    df.to_csv(current_path+'\\data.csv',encoding='utf_8_sig')
+    # current_path = os.path.dirname(__file__)
+    # df.to_csv(current_path+'\\data.csv',encoding='utf_8_sig')
     # write_file(titles)
-   
 
 main()
