@@ -7,6 +7,7 @@ import numpy as np
 import os
 from sense import Analyse
 from sqlalchemy import create_engine
+import pymysql
 
 def read_file():
     res=[]
@@ -126,6 +127,21 @@ def check(x):
     else:
         return 'positive'
 
+def delete():
+    db=pymysql.connect("rm-bp1k0s6kbpm66bpfc4o.mysql.rds.aliyuncs.com", "test2", "test2", "museumapplication")
+    cursor=db.cursor()
+    sql="delete from museumnews"
+    try:
+        cursor.execute(sql)
+        db.commit()
+        print("Delete success")
+    except Exception as e:
+        print("Delete fail: case ", e)
+        db.rollback()
+    finally:
+        cursor.close()
+        db.close()
+
 def main():
     titles=[]
     tt=[]
@@ -141,7 +157,7 @@ def main():
     }
     for i,name in enumerate(names):
         idx=i+1
-        # print(name)
+        print(name, idx)
         urls=get_url(name)
         for x in urls:
             xxxx+=1
@@ -156,15 +172,16 @@ def main():
             data['newsmaintext'].append(xx['content'])
             data['newsTime'].append(xx['time'])
             titles.append(xx['title'])
-        #     if xxxx>=15:
+        #     if xxxx>=3:
         #         break
-        # if xxxx>=15:
+        # if xxxx>=3:
         #     break
     data['positive/negative']=list(map(check,Analyse(titles)))
     df=pd.DataFrame(data)
     # print(df)
+    delete()
     engine = create_engine('mysql+pymysql://test2:test2@rm-bp1k0s6kbpm66bpfc4o.mysql.rds.aliyuncs.com/museumapplication')
-    df.to_sql(name='museumnews',con=engine,chunksize=1000,if_exists='append',index=None)
+    df.to_sql(name='museumnews',con=engine,chunksize=500,if_exists='append',index=None)
     # print(tt)
     # current_path = os.path.dirname(__file__)
     # df.to_csv(current_path+'\\data.csv',encoding='utf_8_sig')
