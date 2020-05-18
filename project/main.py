@@ -127,25 +127,10 @@ def check(x):
     else:
         return 'positive'
 
-def delete():
-    db=pymysql.connect("rm-bp1k0s6kbpm66bpfc4o.mysql.rds.aliyuncs.com", "test2", "test2", "museumapplication")
-    cursor=db.cursor()
-    sql="delete from museumnews"
-    try:
-        cursor.execute(sql)
-        db.commit()
-        print("Delete success")
-    except Exception as e:
-        print("Delete fail: case ", e)
-        db.rollback()
-    finally:
-        cursor.close()
-        db.close()
-
 def main():
     titles=[]
     tt=[]
-    xxxx=0
+    # xxxx=0
     names=read_file()
     data={
         'newsID':[],
@@ -155,31 +140,48 @@ def main():
         'newsmaintext':[],
         'positive/negative':[]
     }
+    # 获得现有记录数
+    db=pymysql.connect("rm-bp1k0s6kbpm66bpfc4o.mysql.rds.aliyuncs.com", "test2", "test2", "museumapplication")
+    cursor=db.cursor()
+    query=" select max(newsID) from {}".format('museumnews')
+    cursor.execute(query)
+    db.commit()
+    cnt=cursor.fetchall()
+    xxxx=cnt[0][0]
     for i,name in enumerate(names):
         idx=i+1
         print(name, idx)
         urls=get_url(name)
         for x in urls:
             xxxx+=1
-            # print(xxxx,"    ",x)
             xx=get_news(x,idx)
             if xx['id']==None or xx['title']==None or xx['content']==None or xx['time']==None:
                 tt.append(x)
                 continue
-            data['newsID'].append(str(xxxx))
-            data['museumID'].append(xx['id'])
-            data['newsTitle'].append(xx['title'])
-            data['newsmaintext'].append(xx['content'])
-            data['newsTime'].append(xx['time'])
-            titles.append(xx['title'])
+            # 判断是否已经在库中
+            # print("title=", xx['title'])
+            sql="select * from museumnews where newsTitle='%s'" % xx['title']
+            exist = cursor.execute(sql)
+
+            if exist:
+                # print("no")
+                xxxx-=1
+            else:
+                print("yes", xx['title'], xx['time'])
+                data['newsID'].append(str(xxxx))
+                data['museumID'].append(xx['id'])
+                data['newsTitle'].append(xx['title'])
+                data['newsmaintext'].append(xx['content'])
+                data['newsTime'].append(xx['time'])
+                titles.append(xx['title'])
         #     if xxxx>=3:
         #         break
         # if xxxx>=3:
         #     break
     data['positive/negative']=list(map(check,Analyse(titles)))
     df=pd.DataFrame(data)
+
     # print(df)
-    delete()
     engine = create_engine('mysql+pymysql://test2:test2@rm-bp1k0s6kbpm66bpfc4o.mysql.rds.aliyuncs.com/museumapplication')
     df.to_sql(name='museumnews',con=engine,chunksize=500,if_exists='append',index=None)
     # print(tt)
