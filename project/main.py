@@ -12,7 +12,7 @@ import pymysql
 def read_file():
     res=[]
     current_path = os.path.dirname(__file__)
-    names=pd.read_csv(current_path+'names.csv')
+    names=pd.read_csv(current_path+'\\names.csv')
     for x in names['name']:
         res.append(x)
     return res
@@ -142,7 +142,6 @@ def check(x):
 def main():
     titles=[]
     tt=[]
-    # xxxx=0
     names=read_file()
     data={
         'newsID':[],
@@ -161,6 +160,9 @@ def main():
     db.commit()
     cnt=cursor.fetchall()
     xxxx=cnt[0][0]
+    if xxxx==None:xxxx=0
+    print('x=',xxxx)
+
     for i,name in enumerate(names):
         idx=i+1
         print(name, idx)
@@ -175,7 +177,7 @@ def main():
             # print("title=", xx['title'])
             sql="select * from museumnews where newsTitle='%s' and museumID='%s'" % (xx['title'],xx['id'])
             exist = cursor.execute(sql)
-            # print('exist=', exist, ' title=', xx['title'], ' time=', xx['time'])
+            print('exist=', exist, ' title=', xx['title'], ' time=', xx['time'], 'xxxx=', xxxx)
             if exist:
                 xxxx-=1
             else:
