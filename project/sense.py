@@ -2,10 +2,17 @@
 from snownlp import sentiment
 from snownlp import SnowNLP
 import pandas as pd 
-# sentiment.train('D:\\SnowNLP\\snownlp-0.12.3\\snownlp\\sentiment\\neg.txt', 
-#                 'D:\\SnowNLP\\snownlp-0.12.3\\snownlp\\sentiment\\pos.txt')
-# sentiment.save('D:\\SnowNLP\\snownlp-0.12.3\\snownlp\\sentiment\\sentiment.marshal')
+import os
 
+def train():
+    current_path = os.path.dirname(__file__)
+    neg=current_path+'\\snownlp\\sentiment\\neg.txt'
+    pos=current_path+'\\snownlp\\sentiment\\pos.txt'
+    parm=current_path+'\\snownlp\\sentiment\\sentiment.marshal'
+    sentiment.train(neg, pos)
+    sentiment.save(parm)
+
+# train()
 
 def Analyse(arr):
     ans = []
@@ -19,3 +26,6 @@ def Analyse(arr):
         else:
             ans.append(1)
     return ans
+
+
+

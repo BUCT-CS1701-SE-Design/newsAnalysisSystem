@@ -5,7 +5,7 @@ import re
 import pandas as pd
 import numpy as np
 import os
-from sense import Analyse
+from sense import Analyse,train
 from sqlalchemy import create_engine
 import pymysql
 
@@ -160,11 +160,10 @@ def main():
                 continue
             # 判断是否已经在库中
             # print("title=", xx['title'])
-            sql="select * from museumnews where newsTitle='%s'" % xx['title']
+            sql="select * from museumnews where newsTitle='%s' and museumID='%s'" % (xx['title'],xx['id'])
             exist = cursor.execute(sql)
-
+            # print('exist=', exist, ' title=', xx['title'], ' time=', xx['time'])
             if exist:
-                # print("no")
                 xxxx-=1
             else:
                 print("yes", xx['title'], xx['time'])
