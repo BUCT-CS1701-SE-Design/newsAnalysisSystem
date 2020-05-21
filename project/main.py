@@ -12,7 +12,7 @@ import pymysql
 def read_file():
     res=[]
     current_path = os.path.dirname(__file__)
-    names=pd.read_csv(current_path+'names.csv')
+    names=pd.read_csv(current_path+'\\names.csv')
     for x in names['name']:
         res.append(x)
     return res
@@ -81,6 +81,7 @@ def get_news(news,idx):
 
 def get_url(name):
     urls=[]
+    imgs=[]
     num=1
     while True:
         try:
@@ -93,8 +94,9 @@ def get_url(name):
                 'channel':'新闻',
                 'page': str(num)
             }
-            r=requests.get('https://search.cctv.com/search.php',headers=hd,params=kv,timeout=1000)
-            r.raise_for_status()
+            r=requests.get('https://search.cctv.com/search.php',headers=hd,params=kv)
+            # print(r.text)
+            # r.raise_for_status()
             r.encoding=r.apparent_encoding
             soup=BeautifulSoup(r.text,'html.parser')
             comments = soup.findAll(text=lambda text: isinstance(text, Comment))
@@ -108,18 +110,28 @@ def get_url(name):
             tot=(tot+9)//10
 
             pre=re.compile(r'link_p.php[?]targetpage=http://news(.)*html&')
-            for link in soup.find_all('a'):
+            for xa in soup.find_all(name='div',class_='tright'):
+                link=xa.find('a')
                 x=link.get('href')
+                
                 if pre.match(x):
                     xx=pre.match(x).span()
                     urls.append(x[22:xx[1]-1:])
-            
+                else: 
+                    continue
+                imgg=xa.find('img')
+                imgx=imgg.get('src')
+                if imgx:
+                    imgs.append(imgx)
+                else:
+                    imgs.append('https://p1.img.cctvpic.com/photoAlbum/templet/common/DEPA1546583592748817/logo31.png')    
             num+=1
             if num>tot:
                 break
         except:
-            return urls
-    return urls
+        #     print('fuck')
+            return urls,imgs
+    return urls,imgs
 
 def check(x):
     if x==0:
@@ -138,7 +150,8 @@ def main():
         'newsTitle':[],
         'newsTime':[],
         'newsmaintext':[],
-        'positive/negative':[]
+        'positive/negative':[],
+        'imageurl':[],
     }
     # 获得现有记录数
     db=pymysql.connect("rm-bp1k0s6kbpm66bpfc4o.mysql.rds.aliyuncs.com", "test2", "test2", "museumapplication")
@@ -151,8 +164,8 @@ def main():
     for i,name in enumerate(names):
         idx=i+1
         print(name, idx)
-        urls=get_url(name)
-        for x in urls:
+        urls,imgs=get_url(name)
+        for x,imgx in zip(urls,imgs):
             xxxx+=1
             xx=get_news(x,idx)
             if xx['id']==None or xx['title']==None or xx['content']==None or xx['time']==None:
@@ -166,12 +179,13 @@ def main():
             if exist:
                 xxxx-=1
             else:
-                print("yes", xx['title'], xx['time'])
+                # print("yes", xx['title'], xx['time'])
                 data['newsID'].append(str(xxxx))
                 data['museumID'].append(xx['id'])
                 data['newsTitle'].append(xx['title'])
                 data['newsmaintext'].append(xx['content'])
                 data['newsTime'].append(xx['time'])
+                data['imageurl'].append(imgx)
                 titles.append(xx['title'])
         #     if xxxx>=3:
         #         break
