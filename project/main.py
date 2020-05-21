@@ -12,7 +12,7 @@ import pymysql
 def read_file():
     res=[]
     current_path = os.path.dirname(__file__)
-    names=pd.read_csv(current_path+'\\names.csv')
+    names=pd.read_csv(current_path+'names.csv')
     for x in names['name']:
         res.append(x)
     return res
